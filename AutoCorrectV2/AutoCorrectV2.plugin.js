@@ -42,7 +42,7 @@ var AutoCorrectV2 = (() => {
                 },
 
             ],
-            version: "0.0.2",
+            version: "0.0.3",
             description: "Corrects your message when you send it.",
             github: "https://github.com/Strencher/BetterDiscordStuff/AutoCorrectV2/AutoCorrectV2.plugin.js",
             github_raw: "https://raw.githubusercontent.com/Strencher/BetterDiscordStuff/master/AutoCorrectV2/AutoCorrectV2.plugin.js"
@@ -51,7 +51,7 @@ var AutoCorrectV2 = (() => {
             {
                 title: "BUG",
                 type: "fixed",
-                items: ["Fixed matching the words"]
+                items: ["Fixed matching the words regex bug"]
             }
         ]
     };
@@ -121,10 +121,17 @@ var AutoCorrectV2 = (() => {
                 saveSettings() {
                     PluginUtilities.saveSettings("AutoCorrectV2", this.settings)
                 }
+
+                escapeRegex(string) {
+                    return string.replace(/[.*+?^$:{}()|[\]\\]/g, '\\$&');
+                }
+                
                 createMessage(e) {
                     this.loadSettings()
                     var msg = e;
-                    Object.entries(this.settings.words).forEach(([key, value])=> {
+                    Object.entries(this.settings.words).forEach(async([key, value])=> {
+                        key = this.escapeRegex(key);
+
                         msg = msg.replace(new RegExp(`\\b${key}\\b`, "gi"), value);
                     })
                     if(this.settings.capitalize && !(msg.startsWith("http"))) msg = msg[0].toUpperCase() + msg.substring(1);
